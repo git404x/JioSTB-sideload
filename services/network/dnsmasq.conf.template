@@ -1,0 +1,23 @@
+# ==============================================================================
+# JioSTB-sideload — Dnsmasq Isolated DHCP & DNS Spoofing Template
+# ==============================================================================
+interface=__INTERFACE__
+bind-dynamic
+
+# Listen on interface port 53 for DNS spoofing
+port=53
+
+# Spoof Jio TR-069 ACS domain to host IP
+address=/acs.oss.jio.com/__HOST_IP__
+address=/api.jio.com/__HOST_IP__
+address=/jiostb.cdn.jio.com/__HOST_IP__
+
+# DHCP Range & Lease Settings
+dhcp-range=__DHCP_START__,__DHCP_END__,__SUBNET_MASK__,12h
+dhcp-option=option:router,__HOST_IP__
+dhcp-option=option:dns-server,__HOST_IP__
+dhcp-leasefile=/tmp/jiostb_dnsmasq.leases
+
+# Verbose Logging
+log-dhcp
+log-queries
