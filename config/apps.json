@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JioSTB FOSS Applications Manifest",
+  "description": "Declarative catalog of audited FOSS Android TV applications, sources, and architecture filters",
+  "version": "1.0.0",
+  "apps": [
+    {
+      "id": "projectivy",
+      "name": "Projectivy Launcher",
+      "package": "com.spocky.projengmenu",
+      "category": "launcher",
+      "description": "Smooth, modern Android TV launcher with customizable channels, wallpaper support, and zero telemetry",
+      "source": "github",
+      "repo": "spocky/miproja1",
+      "asset_filter": "ProjectivyLauncher.*\\.apk",
+      "output_filename": "projectivy.apk"
+    },
+    {
+      "id": "leankeyboard",
+      "name": "LeanKeyBoard",
+      "package": "org.liskovsoft.androidtv.rukeyboard",
+      "category": "input",
+      "description": "Clean, lightweight D-Pad native on-screen keyboard for Android TV remotes",
+      "source": "github",
+      "repo": "yuliskov/LeanKeyboard",
+      "asset_filter": ".*\\.apk",
+      "output_filename": "leankeyboard.apk"
+    },
+    {
+      "id": "smarttube",
+      "name": "SmartTube",
+      "package": "app.smarttube.fdroid",
+      "category": "media",
+      "description": "Ad-free, SponsorBlock-integrated YouTube client designed specifically for Android TV",
+      "source": "fdroid",
+      "url": "https://f-droid.org/en/packages/app.smarttube.fdroid/",
+      "package_id": "app.smarttube.fdroid",
+      "target_abi": "armeabi-v7a",
+      "output_filename": "smarttube.apk"
+    },
+    {
+      "id": "flauncher",
+      "name": "FLauncher",
+      "package": "me.efesser.flauncher",
+      "category": "launcher",
+      "description": "Ultra-lightweight open-source Flutter launcher for Android TV",
+      "source": "gitlab",
+      "project_id": "26632151",
+      "package_name": "flauncher",
+      "output_filename": "flauncher.apk"
+    },
+    {
+      "id": "tvbro",
+      "name": "TV-Bro Web Browser",
+      "package": "com.phlox.tvwebbrowser",
+      "category": "utility",
+      "description": "Open-source web browser designed specifically for TV remotes with built-in cursor & download manager",
+      "source": "github",
+      "repo": "truefedex/tv-bro",
+      "asset_filter": ".*\\.apk",
+      "output_filename": "tvbro.apk"
+    },
+    {
+      "id": "justplayer",
+      "name": "Just Player",
+      "package": "com.brouken.player",
+      "category": "media",
+      "description": "Clean ExoPlayer-based video player supporting all major codecs, HDR10, and multi-channel audio",
+      "source": "github",
+      "repo": "moneytoo/Player",
+      "asset_filter": ".*armeabi-v7a.*\\.apk",
+      "output_filename": "justplayer.apk"
+    },
+    {
+      "id": "droidify",
+      "name": "Droid-ify",
+      "package": "com.looker.droidify",
+      "category": "store",
+      "description": "Material F-Droid client for managing and discovering open-source applications",
+      "source": "github",
+      "repo": "Looker-App/Droid-ify",
+      "asset_filter": ".*\\.apk",
+      "output_filename": "droidify.apk"
+    },
+    {
+      "id": "keymapper",
+      "name": "Key Mapper",
+      "package": "io.github.sds100.keymapper",
+      "category": "accessibility",
+      "description": "Hardware remote button remapping tool to bind dedicated remote buttons to custom apps",
+      "source": "github",
+      "repo": "sds100/KeyMapper",
+      "asset_filter": ".*\\.apk",
+      "output_filename": "keymapper.apk"
+    }
+  ]
+}
