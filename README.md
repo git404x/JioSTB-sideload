@@ -51,11 +51,12 @@ It leverages cryptographic certificate forgery (Sectigo/eMudhra & RILROOTCA), TR
 
 ## 💎 Key Features
 
-- **100% Pure FOSS Policy:** Zero binary `.apk`, `.exe`, or `.dll` blobs committed to Git. All packages are dynamically fetched from audited upstream GitLab/GitHub/F-Droid releases via `scripts/fetch_foss_apks.sh`.
+- **100% Pure FOSS Policy:** Zero binary `.apk`, `.exe`, or `.dll` blobs committed to Git. All packages are dynamically fetched using a declarative catalog (`config/apps.json`) via `scripts/fetch_apps.py` directly from audited F-Droid, GitHub, and GitLab sources.
+- **Minimal, Professional CLI (`stbctl` / `stb`):** Clean Unix-style command runner supporting automated or interactive wizard workflows (`./stb wizard`).
 - **Reproducible Nix Toolchain:** Ships with `flake.nix` and `shell.nix` for instant sandbox activation (`direnv allow` or `nix develop`).
 - **Zero-WAN Tampering:** Supports the non-destructive **USB Eject Static DNS trick**, completely removing the need to unplug the fiber optic cable or touch ISP equipment.
 - **Surgical Debloating:** Disables 54 verified carrier bloat packages while maintaining 100% HDMI-CEC, Bluetooth voice remote, Widevine L1 DRM, and stock recovery stability.
-- **Master 1-Click Rollback:** Instant restoration of all disabled packages, default launcher, display density, and animation speeds via `scripts/undo.sh`.
+- **Master 1-Click Rollback:** Instant restoration of all disabled packages, default launcher, display density, and animation speeds via `./stb restore`.
 - **Vulkan Remote Display:** Pre-configured `scrcpy` profile utilizing Amlogic silicon hardware encoder (`OMX.amlogic.video.encoder.avc`) and UHID input emulation for instantaneous TV navigation from a PC.
 
 ---
@@ -83,67 +84,73 @@ nix develop
 ```
 If using standard Linux packages, ensure `android-tools`, `scrcpy`, `podman`, `podman-compose`, `dnsmasq`, and `python3` (with `pycryptodome` and `requests`) are installed.
 
-Verify dependencies:
+Verify dependencies and device:
 ```bash
-./jiostb check
+./stb check
 ```
 
 ---
 
-### 2. Configure Network Redirection
+### 2. Option A: Interactive Wizard (Recommended)
+Launch the end-to-end interactive setup wizard:
+```bash
+./stb wizard
+```
+Follow the on-screen prompts to select your model, configure network redirection, cold power-cycle the STB, sideload apps, tune system UI, and debloat.
+
+---
+
+### 3. Option B: Step-by-Step Manual Workflow
+
+#### A. Configure Network Redirection
 Copy and adjust environment configuration if needed:
 ```bash
 cp config/network.env.example config/network.env
 ```
-
 Select your preferred redirection method:
 - **Method 1 (Recommended - USB Eject Trick):** Follow [docs/USB_EJECT_DNS_METHOD.md](docs/USB_EJECT_DNS_METHOD.md) to set a static DNS pointing `acs.oss.jio.com` to your PC's LAN IP via AdGuard Home or local DNS.
 - **Method 2 (Direct Ethernet Link):**
   ```bash
-  sudo ./jiostb net eth
+  sudo ./stb net eth
   ```
 - **Method 3 (Software Wi-Fi AP):**
   ```bash
-  sudo ./jiostb net wifi
+  sudo ./stb net wifi
   ```
 
----
-
-### 3. Launch TR-069 Reverse Proxy & ACS
-In a terminal, start the backend for your model type (`jhs` or `jmsc`):
+#### B. Launch TR-069 Reverse Proxy & ACS
+Start the backend for your model type (`jhs` or `jmsc`):
 ```bash
-./jiostb acs jhs
+./stb acs start jhs
 ```
 Cold power-cycle the STB (unplug wall adapter, wait 5 seconds, reconnect). The STB will query `acs.oss.jio.com`, undergo TLS handshake, check in via TR-069 Inform, and receive the persistent ADB authorization command.
 
----
-
-### 4. Sideload FOSS Applications
-Fetch the audited open-source TV application suite:
+#### C. Sideload FOSS Applications
+Fetch the audited open-source TV application suite dynamically from F-Droid, GitHub, and GitLab:
 ```bash
-./jiostb fetch
+./stb fetch
 ```
 Install and configure the applications on the STB:
 ```bash
-./jiostb install 192.168.29.170
+./stb install 192.168.29.170 projectivy
 ```
-*Configures LeanKeyboard as default IME, sets UI density to 280 DPI, and grants native package installer permissions.*
 
----
+#### D. Optimize Android TV UI & Animations
+Tune window animation durations to 0.5x, set display density to 280 DPI, and prevent idle sleep:
+```bash
+./stb optimize-ui 192.168.29.170
+```
 
-### 5. Debloat Carrier Tracking & Bloatware
+#### E. Debloat Carrier Tracking & Bloatware
 Execute surgical package deactivation:
 ```bash
-./jiostb debloat 192.168.29.170
+./stb debloat 192.168.29.170
 ```
-*Disables 54 telemetry, analytics, and advertising packages, and strips background execution/wakelock privileges via AppOps.*
 
----
-
-### 6. Launch Remote Display (Optional)
+#### F. Launch Remote Display (Optional)
 Launch Vulkan-accelerated low-latency mirroring:
 ```bash
-./jiostb scrcpy 192.168.29.170
+./stb scrcpy 192.168.29.170
 ```
 
 ---
@@ -152,10 +159,12 @@ Launch Vulkan-accelerated low-latency mirroring:
 
 ```
 JioSTB-sideload/
-├── jiostb                          # Unified CLI entrypoint
+├── stbctl                          # Primary Unix control CLI (aliased as stb and jiostb)
+├── stb -> stbctl                   # Generic minimal symlink
 ├── flake.nix                       # Declarative Nix Flake
 ├── shell.nix                       # Pure Nix-shell fallback
 ├── config/
+│   ├── apps.json                   # Declarative catalog of FOSS app sources & ABI filters
 │   ├── network.env.example         # Interface, subnet, and port configuration
 │   ├── packages_safe_to_disable.txt# Manifest of 54 debloatable carrier packages
 │   ├── packages_critical_keep.txt  # HAL, DRM, Bluetooth, and core system manifest
@@ -174,13 +183,17 @@ JioSTB-sideload/
 │       ├── setup_wifi_ap.sh        # Isolated software AP setup
 │       └── dnsmasq.conf.template   # Dynamic DNS spoofing template
 ├── scripts/
-│   ├── fetch_foss_apks.sh          # Dynamic multi-arch FOSS APK fetcher
+│   ├── fetch_apps.py               # Manifest-driven universal F-Droid/GitHub/GitLab fetcher
+│   ├── fetch_foss_apks.sh          # CLI wrapper around fetch_apps.py
 │   ├── install_foss_apps.sh        # Sideloading engine & IME configurator
+│   ├── optimize_ui.sh              # UI & system performance tuner
+│   ├── wizard.sh                   # Interactive Stage 1 guided setup wizard
 │   ├── debloat.sh                  # Surgical package disabling & AppOps lockdown
 │   ├── undo.sh                     # 1-Click master factory restoration script
 │   ├── dump_partitions.sh          # Boot/recovery partition extractor
 │   └── launch_scrcpy.sh            # Hardware-accelerated Vulkan Scrcpy launcher
 └── docs/
+    ├── TOOLS_GUIDE.md              # Complete manual for stbctl / stb subcommands
     ├── EXPLOIT_ARCHITECTURE.md     # In-depth reverse engineering documentation
     ├── USB_EJECT_DNS_METHOD.md     # Guide for setting static DNS via USB ejection
     ├── DEBLOAT_AND_SAFETY_REFERENCE.md # Package audit and safety classification
@@ -193,13 +206,14 @@ JioSTB-sideload/
 
 If you ever need to restore the STB to its factory state (e.g. for warranty claims or troubleshooting):
 ```bash
-./jiostb restore 192.168.29.170
+./stb restore 192.168.29.170
 ```
 This re-enables all 54 stock carrier packages, restores the Jio Home launcher as default, resets UI density to 320 DPI, and restores default window transition animations.
 
 ---
 
 ## 📜 Documentation Index
+- [Complete CLI Manual & Tools Guide](docs/TOOLS_GUIDE.md)
 - [Exploit Architecture & Cryptographic Analysis](docs/EXPLOIT_ARCHITECTURE.md)
 - [Zero-WAN USB Eject DNS Setup](docs/USB_EJECT_DNS_METHOD.md)
 - [Debloat Safety Matrix & Package Audit](docs/DEBLOAT_AND_SAFETY_REFERENCE.md)

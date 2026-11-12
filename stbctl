@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# stbctl — Universal Set-Top Box Exploitation, Management & Debloating CLI
+# ==============================================================================
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Source network environment configuration if available
+if [ -f "$SCRIPT_DIR/config/network.env" ]; then
+    # shellcheck source=/dev/null
+    source "$SCRIPT_DIR/config/network.env"
+elif [ -f "$SCRIPT_DIR/config/network.env.example" ]; then
+    # shellcheck source=/dev/null
+    source "$SCRIPT_DIR/config/network.env.example"
+fi
+
+DEFAULT_IP="${STB_IP:-192.168.29.170}"
+DEFAULT_PORT="${STB_PORT:-5555}"
+TARGET="${DEFAULT_IP}:${DEFAULT_PORT}"
+MODEL="${STB_MODEL:-jhs}"
+
+# Terminal Formatting
+C_RESET='\033[0m'
+C_BOLD='\033[1m'
+C_GREEN='\033[32m'
+C_CYAN='\033[36m'
+C_YELLOW='\033[33m'
+C_RED='\033[31m'
+
+banner() {
+    cat <<'EOF'
+  ____ _____ ____   ____ _____ _     
+ / ___|_   _| __ ) / ___|_   _| |    
+ \___ \ | | |  _ \| |     | | | |    
+  ___) || | | |_) | |___  | | | |___ 
+ |____/ |_| |____/ \____| |_| |_____|
+ Set-Top Box System Control & Exploitation Toolkit
+===================================================
+EOF
+}
+
+usage() {
+    banner
+    echo -e "${C_BOLD}USAGE:${C_RESET}"
+    echo -e "  ./stbctl <command> [arguments]\n"
+    echo -e "${C_BOLD}CORE COMMANDS:${C_RESET}"
+    echo -e "  ${C_CYAN}check${C_RESET} [device]              Query hardware specs, Android API, ABI, and storage"
+    echo -e "  ${C_CYAN}wizard${C_RESET}                     Run guided interactive unlock & provisioning wizard"
+    echo -e "  ${C_CYAN}net${C_RESET} <eth|wifi|down>        Manage network redirection vectors (Ethernet or AP)"
+    echo -e "  ${C_CYAN}acs${C_RESET} <start|stop> [model]   Manage GenieACS & pass_front.py TLS proxy (jhs|jmsc)"
+    echo -e "  ${C_CYAN}fetch${C_RESET} [options]             Download audited FOSS APKs driven by config/apps.json"
+    echo -e "  ${C_CYAN}install${C_RESET} [device] [launcher] Sideload FOSS stack & configure default launcher"
+    echo -e "  ${C_CYAN}optimize-ui${C_RESET} [device]        Set 0.5x animations, 280 DPI density, and keep-awake"
+    echo -e "  ${C_CYAN}debloat${C_RESET} [device]            Surgically disable 54 carrier telemetry packages"
+    echo -e "  ${C_CYAN}restore${C_RESET} [device]            1-Click restoration of stock apps, launcher & settings"
+    echo -e "  ${C_CYAN}dump${C_RESET} [device] [model]       Extract stock boot and recovery partitions"
+    echo -e "  ${C_CYAN}scrcpy${C_RESET} [device]             Launch low-latency Vulkan display mirroring"
+    echo -e "  ${C_CYAN}shell${C_RESET} [device]              Open interactive ADB root/shell session"
+    echo -e "  ${C_CYAN}reboot${C_RESET} [device]             Reboot the target device\n"
+    echo -e "${C_BOLD}EXAMPLES:${C_RESET}"
+    echo -e "  ./stbctl check"
+    echo -e "  ./stbctl wizard"
+    echo -e "  ./stbctl fetch --app smarttube"
+    echo -e "  ./stbctl install 192.168.29.170 projectivy"
+    echo -e "  ./stbctl debloat 192.168.29.170\n"
+}
+
+resolve_device() {
+    local input="${1:-}"
+    if [ -n "$input" ]; then
+        if [[ "$input" != *:* ]]; then
+            echo "${input}:5555"
+        else
+            echo "$input"
+        fi
+        return
+    fi
+    local detected
+    detected=$(adb devices | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+\s+device' | head -1 | awk '{print $1}' || true)
+    if [ -n "$detected" ]; then
+        echo "$detected"
+        return
+    fi
+    echo "$TARGET"
+}
+
+cmd_check() {
+    local dev
+    dev=$(resolve_device "${1:-}")
+    echo -e "${C_CYAN}[+] Connecting to target: $dev ...${C_RESET}"
+    adb connect "$dev" >/dev/null 2>&1 || true
+
+    if ! adb -s "$dev" get-state >/dev/null 2>&1; then
+        echo -e "${C_RED}[!] Device $dev is offline or unauthorized.${C_RESET}"
+        adb devices -l
+        exit 1
+    fi
+
+    echo -e "${C_GREEN}[✓] Device Connected & Authorized!${C_RESET}"
+    echo -n "  Model:       " && adb -s "$dev" shell "getprop ro.product.model"
+    echo -n "  Platform:    " && adb -s "$dev" shell "getprop ro.board.platform"
+    echo -n "  Firmware:    " && adb -s "$dev" shell "getprop ro.build.display.id"
+    echo -n "  Android API: " && adb -s "$dev" shell "getprop ro.build.version.release"
+    echo -n "  CPU ABI:     " && adb -s "$dev" shell "getprop ro.product.cpu.abi"
+    echo -n "  Density:     " && adb -s "$dev" shell "wm density"
+    echo -n "  ADB State:   " && adb -s "$dev" shell "getprop persist.iwedia.tr.adb.state 2>/dev/null || echo enabled"
+    echo -e "\n${C_BOLD}Active Memory & Storage:${C_RESET}"
+    adb -s "$dev" shell "free -m" | head -n 3
+    adb -s "$dev" shell "df -h /data"
+}
+
+COMMAND="${1:-}"
+shift || true
+
+case "$COMMAND" in
+    check)
+        cmd_check "${1:-}"
+        ;;
+    wizard)
+        exec "$SCRIPT_DIR/scripts/wizard.sh" "$@"
+        ;;
+    net)
+        ACTION="${1:-help}"
+        shift || true
+        case "$ACTION" in
+            eth|ethernet)
+                exec "$SCRIPT_DIR/services/network/setup_ethernet.sh" "$@"
+                ;;
+            wifi|ap)
+                exec "$SCRIPT_DIR/services/network/setup_wifi_ap.sh" "$@"
+                ;;
+            down|stop)
+                "$SCRIPT_DIR/services/network/setup_ethernet.sh" --teardown || true
+                "$SCRIPT_DIR/services/network/setup_wifi_ap.sh" --teardown || true
+                echo -e "${C_GREEN}[✓] Network redirection torn down.${C_RESET}"
+                ;;
+            *)
+                echo "Usage: ./stbctl net <eth|wifi|down>"
+                ;;
+        esac
+        ;;
+    acs)
+        ACTION="${1:-start}"
+        shift || true
+        case "$ACTION" in
+            start)
+                M="${1:-$MODEL}"
+                exec "$SCRIPT_DIR/services/setup_acs.sh" "$M"
+                ;;
+            stop)
+                echo "[+] Stopping pass_front.py TLS proxy..."
+                pkill -f "pass_front.py" 2>/dev/null || true
+                echo "[+] Stopping GenieACS containers..."
+                podman-compose -f "$SCRIPT_DIR/services/docker-compose.yml" down 2>/dev/null || \
+                docker-compose -f "$SCRIPT_DIR/services/docker-compose.yml" down 2>/dev/null || true
+                echo -e "${C_GREEN}[✓] ACS services stopped.${C_RESET}"
+                ;;
+            *)
+                echo "Usage: ./stbctl acs <start|stop> [jhs|jmsc]"
+                ;;
+        esac
+        ;;
+    fetch)
+        exec "$SCRIPT_DIR/scripts/fetch_foss_apks.sh" "$@"
+        ;;
+    install)
+        DEV=$(resolve_device "${1:-}")
+        LAUNCHER="${2:-projectivy}"
+        exec "$SCRIPT_DIR/scripts/install_foss_apps.sh" "$DEV" "$LAUNCHER"
+        ;;
+    optimize-ui|optimize|tune)
+        DEV=$(resolve_device "${1:-}")
+        OLED="${2:-}"
+        exec "$SCRIPT_DIR/scripts/optimize_ui.sh" "$DEV" "$OLED"
+        ;;
+    debloat)
+        DEV=$(resolve_device "${1:-}")
+        exec "$SCRIPT_DIR/scripts/debloat.sh" "$DEV"
+        ;;
+    restore)
+        DEV=$(resolve_device "${1:-}")
+        exec "$SCRIPT_DIR/scripts/undo.sh" "$DEV"
+        ;;
+    dump)
+        DEV=$(resolve_device "${1:-}")
+        M="${2:-$MODEL}"
+        exec "$SCRIPT_DIR/scripts/dump_partitions.sh" "$DEV" "$M"
+        ;;
+    scrcpy)
+        DEV=$(resolve_device "${1:-}")
+        shift || true
+        exec "$SCRIPT_DIR/scripts/launch_scrcpy.sh" "$DEV" "$@"
+        ;;
+    shell)
+        DEV=$(resolve_device "${1:-}")
+        exec adb -s "$DEV" shell
+        ;;
+    reboot)
+        DEV=$(resolve_device "${1:-}")
+        echo -e "${C_CYAN}[+] Rebooting $DEV ...${C_RESET}"
+        exec adb -s "$DEV" reboot
+        ;;
+    -h|--help|help|"")
+        usage
+        ;;
+    *)
+        echo -e "${C_RED}[!] Unknown command: $COMMAND${C_RESET}\n"
+        usage
+        exit 1
+        ;;
+esac

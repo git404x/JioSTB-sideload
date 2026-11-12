@@ -50,7 +50,7 @@
             shellHook = ''
               echo "================================================================="
               echo " 🚀 JioSTB-sideload Environment Loaded"
-              echo " Type './jiostb --help' for the interactive CLI."
+              echo " Run './stb check' or './stb wizard' to get started."
               echo "================================================================="
             '';
           };
