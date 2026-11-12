@@ -1,0 +1,20 @@
+# ==============================================================================
+# Jio STB — Preinstalled Third-Party Streaming / Media Apps
+# These can be uninstalled to clean up storage or retained for subscriptions.
+# All stock APKs can be re-installed from backups/apks or fetched via Aurora Store.
+# ==============================================================================
+
+in.startv.hotstar                       # Disney+ Hotstar (Android TV)
+com.jiotv.sonyliv                       # SonyLIV (Android TV)
+com.zee5.aosp                           # Zee5 (Android TV)
+com.suntv.sunnxt                        # Sun NXT (Android TV)
+com.hoichoi.mitv                        # Hoichoi (Android TV)
+com.etvwin.androidtv                    # ETV Win (Android TV)
+com.amazon.amazonvideo.livingroom       # Amazon Prime Video (Android TV)
+com.netflix.ninja                       # Netflix (Android TV)
+
+# --- Jio Paid Live TV Core (Keep if using JioFiber DTH subscription) ---
+com.jio.media.jiotvplus                 # JioTV+ Live Channels & Catch-up Playback Engine
+com.jio.media.livetv                    # Jio Live TV Streaming Core
+com.jio.stb.catv                        # Jio CATV Hybrid Tuner Interface
+com.media.jio.sso.stb                   # Jio Single Sign-On (Token Auth for Paid Channels)

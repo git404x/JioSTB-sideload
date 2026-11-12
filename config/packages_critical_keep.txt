@@ -1,0 +1,37 @@
+# ==============================================================================
+# Jio STB — Critical Core Services (DO NOT DISABLE)
+# Disabling any of these may result in bootloops, loss of video, or loss of remote.
+# ==============================================================================
+
+android                                 # Android Core Framework
+android.ext.services                    # Android Extension Services
+android.ext.shared                      # Android Shared Library Support
+com.android.systemui                    # System UI & status bar
+com.android.tv.settings                 # Genuine Stock Android TV Settings UI
+com.android.packageinstaller            # Stock AOSP package installer (required for app installs)
+com.android.permissioncontroller        # Runtime permission management system
+com.android.providers.settings          # System settings provider
+com.android.providers.media             # Media storage provider
+com.android.providers.media.module      # Media provider mainline module
+com.android.providers.downloads         # Download manager
+com.android.providers.tv                # TV input and live channel database provider
+com.android.networkstack                # Core networking and Wi-Fi stack
+com.android.networkstack.permissionconfig # Network stack permission config
+com.android.networkstack.tethering      # Tethering controller
+com.android.bluetooth                   # Bluetooth hardware stack
+com.android.location.fused              # Fused location provider
+com.android.inputdevices                # Physical remote & keyboard input driver
+com.android.keychain                    # Hardware security keystore
+com.android.shell                       # ADB shell daemon
+com.android.webview                     # System web rendering engine
+com.droidlogic                          # Amlogic SoC hardware abstraction layer
+com.droidlogic.wifion                   # Amlogic Wi-Fi hardware controller
+com.iwedia.bluetoothconnectionservice   # Bluetooth remote pairing daemon
+com.jio.remote.btserver                 # Jio Bluetooth remote battery & link manager
+com.iwedia.tvinput                      # DTV / HDMI TV input pipeline
+com.iwedia.displayservice               # Display resolution and HDR pipeline
+com.iwedia.ledmanager                   # Front-panel LED hardware state manager
+com.google.android.apps.mediashell      # Google Cast / Chromecast receiver
+com.jio.dialserver                      # DIAL 2nd screen cast server
+com.netflix.partnertoken                # Netflix Widevine DRM security token
+com.iwedia.ui.rjio.launcher.reliance    # Stock Jio launcher (retained on disk as fallback)

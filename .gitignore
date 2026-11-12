@@ -1,0 +1,25 @@
+# Environment & Secret files
+.env
+config/network.env
+
+# Dynamic downloads & local backups (Zero binary blobs in git)
+downloads/
+*.apk
+backups/
+*.img
+
+# Logs & temp files
+*.log
+logs/
+tmp/
+.tmp/
+/tmp/
+
+# Nix & Direnv
+.direnv/
+result
+result-*
+
+# Containers
+.compose.env
+services/data/

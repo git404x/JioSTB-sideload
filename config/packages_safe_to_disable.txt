@@ -1,0 +1,79 @@
+# ==============================================================================
+# Jio STB — Verified Bloatware, Telemetry & Updaters Safe to Disable
+# Total: 54 Packages
+# Format: One package name per line. Comments begin with '#'
+# ==============================================================================
+
+# --- Category 1: TR-069 Management & Remote Control Daemons ---
+com.jio.tr069client                     # Primary Jio TR-069 CWMP client (remote control & config pusher)
+insight.tr069.client                    # Auxiliary TR-069 background diagnostics agent
+com.rjil.jio.stb.commandreceiver        # Remote push execution hook for cloud shell commands
+com.communitake.remotecontrolservice    # CommuniTake remote desktop screen takeover service
+com.teamviewer.quicksupport.addon.jio_stb # TeamViewer remote technician screen scraping addon
+
+# --- Category 2: Ad Delivery & Tracking Frameworks ---
+com.jio.stbadservice                    # Core Jio STB advertising delivery engine
+com.jio.stbwidget                       # Home screen advertisement widgets
+com.jio.screensaver                     # Jio advertising screensaver with push banners
+com.jio.bioscopecontentservice          # Bioscope advertisement content scraper
+
+# --- Category 3: Background Telemetry, Log Scrapers & Task Killers ---
+com.jio.jiobackgroundscheduler          # Background wake-lock and periodic upload scheduler
+com.jio.smartmemorymanager              # Aggressive background task killer (kills user apps)
+com.jio.appoptimizer                    # CPU throttling daemon
+com.rjil.jiostblogservice               # System telemetry & crash log upload service
+com.rjil.podlogservice                  # POD diagnostics upload service
+com.jio.systemstats                     # Hardware stats and network scraper
+com.jio.stb.remotediagnose              # Network diagnosis and probe service
+com.jio.adc.aka                         # Carrier SIM/broadband authentication telemetry
+com.jio.adc.embedded                    # Embedded ADC carrier analytics client
+
+# --- Category 4: Firmware OTA Updaters (Prevents Jio from Overwriting System) ---
+com.iwedia.httpupdate                   # Iwedia HTTP system firmware OTA updater
+com.iwedia.updateservice                # Iwedia system update service
+com.iwedia.pvodupdateservice            # Iwedia PVOD update daemon
+com.iwedia.updatercuotaservice          # Bluetooth remote control OTA firmware updater
+com.jio.httpupdate                      # Jio HTTP firmware update client
+com.jio.usbupdate                       # Jio USB recovery image updater
+
+# --- Category 5: Voice Assistants, Chatbots & Interceptors ---
+com.android.app.jio.voiceassist         # Jio Voice Assistant (intercepts remote mic button for 'Hello Jio')
+com.jio.stb.bot                         # Jio Chatbot assistant daemon
+com.jio.controlcentre                   # Jio proprietary control centre overlay
+com.omni.simplesetup                    # Omni simple setup wizard
+com.jio.profileutility                  # Jio profile utility and lock-in agent
+com.jio.product.exploremyremote         # Explore My Remote tutorial app
+com.omni.touchclient                    # Touch client listener
+com.rjl.mobileremote.receiver           # Background listener for JioHome mobile smartphone app
+com.rjil.jiostbsetting                  # Jio Settings wrapper (hijacked android.settings with priority 999)
+
+# --- Category 6: User-Facing Jio Bloat Apps ---
+com.jiostb.jiogames                     # JioGames store
+com.jio.store                           # JioStore app marketplace
+com.jio.media.jionewsstb                # JioNews TV app
+com.jio.media.jiobeats                  # JioSaavn music player
+com.jio.mymusic.app                     # MyMusic media player
+com.jio.jiocloudpc                      # Jio Cloud PC client
+com.jio.jiocall                         # JioCall video calling client
+com.jio.jiopay                          # JioPay UPI/payment portal
+com.jio.web                             # JioPages TV browser
+com.jio.yt                              # Jio YouTube webview wrapper
+com.aksys.jiogamepad                    # Gamepad pairing utility
+com.jiostb.fti                          # First-Time-Installation setup wizard
+com.jio.universalsetup                  # Universal setup wizard
+com.jio.myhome.mediasharedmp            # Jio Media Share server
+com.inn.nvengineer                      # Engineering test tool
+com.jio.keyboard.swarachakra            # Swarachakra regional virtual keyboard
+
+# --- Category 7: Useless Android System Services on a TV ---
+com.android.bips                        # Built-in print service (TVs do not print to paper)
+com.android.printspooler                # Android print spooler daemon
+com.android.printservice.recommendation # Print service recommendation engine
+com.android.bluetoothmidiservice        # Bluetooth MIDI service for musical instruments
+com.android.camera2                     # Camera application (hardware lacks camera)
+com.android.music                       # AOSP legacy music player from Android 4 era
+com.svox.pico                           # PicoTTS legacy speech engine (2008)
+com.android.cts.ctsshim                 # Google Compatibility Test Suite shim
+com.android.cts.priv.ctsshim            # Privileged Google CTS test shim
+com.iwedia.resetservice                 # Iwedia remote wipe / factory reset daemon
+com.android.hotspot2.osulogin           # Hotspot 2.0 carrier Wi-Fi offloader
