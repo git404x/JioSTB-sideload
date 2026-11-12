@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: docker.io/library/mongo:7.0
+    container_name: genieacs-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - acs
+
+  genieacs:
+    image: docker.io/drumsergio/genieacs:1.2.13.2
+    container_name: genieacs
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      GENIEACS_MONGODB_CONNECTION_URL: "mongodb://mongo:27017/genieacs"
+      GENIEACS_UI_JWT_SECRET: "c6a2b8e1f0d3a5c7e9b1d4f8a2c5e7b3"
+      GENIEACS_CWMP_INTERFACE: "0.0.0.0"
+      GENIEACS_NBI_INTERFACE: "0.0.0.0"
+      GENIEACS_FS_INTERFACE: "0.0.0.0"
+      GENIEACS_UI_INTERFACE: "0.0.0.0"
+      GENIEACS_CWMP_ACCESS_LOG_FILE: ""
+      GENIEACS_NBI_ACCESS_LOG_FILE: ""
+    ports:
+      - "7547:7547"   # CWMP port (accessed by pass_front.py)
+      - "7557:7557"   # NBI REST API port (for queuing tasks)
+      - "3008:3000"   # Web UI (admin:admin, mapped to 3008 to prevent AdGuard :3000 collision)
+    networks:
+      - acs
+
+networks:
+  acs:
+    driver: bridge
+
+volumes:
+  mongo-data:
