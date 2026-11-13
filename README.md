@@ -163,6 +163,8 @@ JioSTB-sideload/
 ├── stb -> stbctl                   # Generic minimal symlink
 ├── flake.nix                       # Declarative Nix Flake
 ├── shell.nix                       # Pure Nix-shell fallback
+├── CREDITS.md                      # Attribution to upstream researchers & maintainers
+├── LICENSE                         # Standard MIT License
 ├── config/
 │   ├── apps.json                   # Declarative catalog of FOSS app sources & ABI filters
 │   ├── network.env.example         # Interface, subnet, and port configuration
@@ -182,7 +184,13 @@ JioSTB-sideload/
 │       ├── setup_ethernet.sh       # Isolated direct-cable setup with dnsmasq
 │       ├── setup_wifi_ap.sh        # Isolated software AP setup
 │       └── dnsmasq.conf.template   # Dynamic DNS spoofing template
+├── src/
+│   └── RootShell2.java             # Java source for sdknativeservice UID 0 Binder backdoor
+├── resources/
+│   └── rootshell2.jar              # Prebuilt helper for JMSC sdknativeservice root execution
 ├── scripts/
+│   ├── doctor.py                   # Diagnostics suite & synthetic Inform simulator
+│   ├── forge_emudhra_chain.py      # Dynamic eMudhra scalar recovery & cert minter
 │   ├── fetch_apps.py               # Manifest-driven universal F-Droid/GitHub/GitLab fetcher
 │   ├── fetch_foss_apks.sh          # CLI wrapper around fetch_apps.py
 │   ├── install_foss_apps.sh        # Sideloading engine & IME configurator
@@ -190,8 +198,10 @@ JioSTB-sideload/
 │   ├── wizard.sh                   # Interactive Stage 1 guided setup wizard
 │   ├── debloat.sh                  # Surgical package disabling & AppOps lockdown
 │   ├── undo.sh                     # 1-Click master factory restoration script
-│   ├── dump_partitions.sh          # Boot/recovery partition extractor
-│   └── launch_scrcpy.sh            # Hardware-accelerated Vulkan Scrcpy launcher
+│   ├── dump_partitions.sh          # Boot/recovery partition extractor & root command runner
+│   ├── launch_scrcpy.sh            # Hardware-accelerated Vulkan Scrcpy launcher
+│   └── lib/
+│       └── adb_helpers.sh          # Shared ADB uninstall, suspend, and AppOps routines
 └── docs/
     ├── TOOLS_GUIDE.md              # Complete manual for stbctl / stb subcommands
     ├── EXPLOIT_ARCHITECTURE.md     # In-depth reverse engineering documentation
@@ -212,12 +222,13 @@ This re-enables all 54 stock carrier packages, restores the Jio Home launcher as
 
 ---
 
-## 📜 Documentation Index
+## 📜 Documentation & Credits Index
 - [Complete CLI Manual & Tools Guide](docs/TOOLS_GUIDE.md)
 - [Exploit Architecture & Cryptographic Analysis](docs/EXPLOIT_ARCHITECTURE.md)
 - [Zero-WAN USB Eject DNS Setup](docs/USB_EJECT_DNS_METHOD.md)
 - [Debloat Safety Matrix & Package Audit](docs/DEBLOAT_AND_SAFETY_REFERENCE.md)
 - [Troubleshooting & Diagnostics Guide](docs/TROUBLESHOOTING.md)
+- [Credits & Researcher Acknowledgments](CREDITS.md)
 
 ---
 

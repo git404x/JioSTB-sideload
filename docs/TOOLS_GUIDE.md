@@ -10,6 +10,11 @@ The `stbctl` CLI (aliased as `stb`) is the unified command-line orchestrator for
 | :--- | :--- | :--- |
 | **`check`** | `./stb check [device]` | Inspects hardware, firmware, ABI, memory, storage, and ADB authorization state. |
 | **`wizard`** | `./stb wizard` | Guided interactive end-to-end unlock, provisioning, and debloating assistant. |
+| **`doctor`** | `./stb doctor [options]` | Runs diagnostic suite (`--quick`, `--simulate`, `--watch`, `--tasks`, `--clear-tasks`). |
+| **`simulate`** | `./stb simulate` | Sends synthetic CWMP Inform through TLS front & GenieACS to verify host stack. |
+| **`tasks`** | `./stb tasks` | Inspects all pending TR-069 tasks queued in GenieACS for connected devices. |
+| **`clear-tasks`** | `./stb clear-tasks` | Deletes all pending TR-069 tasks from GenieACS. |
+| **`forge-cert`** | `./stb forge-cert [options]` | Mints forged Sectigo-anchored ACS certificates via recovered eMudhra scalar. |
 | **`net`** | `./stb net <eth\|wifi\|down>` | Controls isolated direct Ethernet or software Wi-Fi AP redirection environments. |
 | **`acs`** | `./stb acs <start\|stop> [model]` | Supervises GenieACS containers and multi-port TLS reverse proxy. |
 | **`fetch`** | `./stb fetch [options]` | Dynamically downloads verified FOSS Android TV APKs driven by `config/apps.json`. |
@@ -18,6 +23,8 @@ The `stbctl` CLI (aliased as `stb`) is the unified command-line orchestrator for
 | **`debloat`** | `./stb debloat [device]` | Disables 54 tracking/telemetry packages and cuts background privileges via AppOps. |
 | **`restore`** | `./stb restore [device]` | 1-Click emergency factory reset restoring stock apps, launcher, and animations. |
 | **`dump`** | `./stb dump [device] [model]` | Extracts stock `boot.img` and `recovery.img` partition dumps. |
+| **`root`** | `./stb root <cmd> [device] [model]` | Executes arbitrary root command (UID 0) via rootshell2 or tr069native. |
+| **`clu`** | `./stb clu <cmd\|read>` | Queues on-boot command or reads back executed output via JHS TR-069 hook. |
 | **`scrcpy`** | `./stb scrcpy [device]` | Launches hardware-accelerated Vulkan remote mirroring with UHID control. |
 | **`shell`** | `./stb shell [device]` | Opens an interactive ADB shell into the STB. |
 | **`reboot`** | `./stb reboot [device]` | Issues an immediate clean reboot to the STB. |
@@ -62,7 +69,57 @@ An interactive Stage 1 guided setup wizard inspired by the original `sideload-ji
 
 ---
 
-### 3. `stb net`
+### 3. `stb doctor` & `stb simulate`
+Comprehensive diagnostics suite ported directly from `ilikechocopies/sideload-jiostb`:
+```bash
+# Run quick health check (ports, NBI, DNS):
+./stb doctor --quick
+
+# Simulate synthetic CWMP Inform to prove PC stack works 100%:
+./stb simulate
+
+# Watch for incoming STB connection and port 5555:
+./stb doctor --watch
+
+# View pending TR-069 tasks in GenieACS queue:
+./stb tasks
+
+# Clear pending TR-069 tasks:
+./stb clear-tasks
+```
+`./stb simulate` constructs a synthetic SOAP CWMP `1 BOOT` Inform envelope, sends it through `pass_front.py` over TLS, validates the session cookie, verifies that the test device appears in the GenieACS NBI database, and cleanly deletes it. This proves your workstation stack is functioning without ever touching the STB.
+
+---
+
+### 4. `stb root` & `stb clu`
+Direct root (UID 0) execution capabilities covering both box architectures:
+- **JMSC Models (via `resources/rootshell2.jar`):**
+  Uses the `com.jio.sdk.sdknativeservice` Binder IPC backdoor (`module:os, cmd:get-cpu-temperature, zone:<cmd>`) to execute arbitrary shell commands as UID 0:
+  ```bash
+  ./stb root "id" 192.168.29.170 jmsc
+  ```
+- **JHS Models (via TR-069 `tr069native` daemon):**
+  Queues command execution in `Device.JioSTB.Debugging.CommandLine.OnBootExecuteCmd`:
+  ```bash
+  # Queue root command on next boot:
+  ./stb clu "id"
+  # (Cold reboot STB twice: reboot 1 stores to DB, reboot 2 executes as root)
+  # Read back executed output:
+  ./stb clu read
+  ```
+
+---
+
+### 5. `stb forge-cert`
+Dynamic cryptographic certificate minting tool ported from `forge_emudhra_chain.py`:
+```bash
+./stb forge-cert --host acs.oss.jio.com --out certs/forged_chain.pem
+```
+Recovers the compromised eMudhra intermediate CA private key scalar ($d = 156$) on curve `SECP384R1`, signs a leaf certificate for `acs.oss.jio.com` anchored on Sectigo AAA Certificate Services (trusted by Jio's Android system trust store), and outputs a combined PEM bundle for `pass_front.py`.
+
+---
+
+### 6. `stb net`
 Controls local network isolation engines:
 - **Direct Ethernet Link:**
   ```bash

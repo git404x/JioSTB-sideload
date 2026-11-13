@@ -47,6 +47,11 @@ usage() {
     echo -e "${C_BOLD}CORE COMMANDS:${C_RESET}"
     echo -e "  ${C_CYAN}check${C_RESET} [device]              Query hardware specs, Android API, ABI, and storage"
     echo -e "  ${C_CYAN}wizard${C_RESET}                     Run guided interactive unlock & provisioning wizard"
+    echo -e "  ${C_CYAN}doctor${C_RESET} [options]           Run diagnostic checks (--quick, --simulate, --watch, --tasks)"
+    echo -e "  ${C_CYAN}simulate${C_RESET}                   Simulate synthetic CWMP Inform to prove host setup"
+    echo -e "  ${C_CYAN}tasks${C_RESET}                      Inspect pending TR-069 tasks in GenieACS queue"
+    echo -e "  ${C_CYAN}clear-tasks${C_RESET}                Clear pending TR-069 tasks from GenieACS"
+    echo -e "  ${C_CYAN}forge-cert${C_RESET}                 Mint forged Sectigo/eMudhra ACS TLS certificate"
     echo -e "  ${C_CYAN}net${C_RESET} <eth|wifi|down>        Manage network redirection vectors (Ethernet or AP)"
     echo -e "  ${C_CYAN}acs${C_RESET} <start|stop> [model]   Manage GenieACS & pass_front.py TLS proxy (jhs|jmsc)"
     echo -e "  ${C_CYAN}fetch${C_RESET} [options]             Download audited FOSS APKs driven by config/apps.json"
@@ -55,12 +60,17 @@ usage() {
     echo -e "  ${C_CYAN}debloat${C_RESET} [device]            Surgically disable 54 carrier telemetry packages"
     echo -e "  ${C_CYAN}restore${C_RESET} [device]            1-Click restoration of stock apps, launcher & settings"
     echo -e "  ${C_CYAN}dump${C_RESET} [device] [model]       Extract stock boot and recovery partitions"
+    echo -e "  ${C_CYAN}root${C_RESET} <cmd> [device] [model] Execute arbitrary root (UID 0) command on STB"
+    echo -e "  ${C_CYAN}clu${C_RESET} <cmd|read>             Queue or read JHS on-boot root command via TR-069"
     echo -e "  ${C_CYAN}scrcpy${C_RESET} [device]             Launch low-latency Vulkan display mirroring"
     echo -e "  ${C_CYAN}shell${C_RESET} [device]              Open interactive ADB root/shell session"
     echo -e "  ${C_CYAN}reboot${C_RESET} [device]             Reboot the target device\n"
     echo -e "${C_BOLD}EXAMPLES:${C_RESET}"
     echo -e "  ./stbctl check"
     echo -e "  ./stbctl wizard"
+    echo -e "  ./stbctl doctor --quick"
+    echo -e "  ./stbctl simulate"
+    echo -e "  ./stbctl root \"id\" 192.168.29.170 jhs"
     echo -e "  ./stbctl fetch --app smarttube"
     echo -e "  ./stbctl install 192.168.29.170 projectivy"
     echo -e "  ./stbctl debloat 192.168.29.170\n"
@@ -119,6 +129,56 @@ case "$COMMAND" in
         ;;
     wizard)
         exec "$SCRIPT_DIR/scripts/wizard.sh" "$@"
+        ;;
+    doctor)
+        exec python3 "$SCRIPT_DIR/scripts/doctor.py" "$@"
+        ;;
+    simulate)
+        exec python3 "$SCRIPT_DIR/scripts/doctor.py" --simulate "$@"
+        ;;
+    tasks)
+        exec python3 "$SCRIPT_DIR/scripts/doctor.py" --tasks "$@"
+        ;;
+    clear-tasks)
+        exec python3 "$SCRIPT_DIR/scripts/doctor.py" --clear-tasks "$@"
+        ;;
+    forge-cert)
+        exec python3 "$SCRIPT_DIR/scripts/forge_emudhra_chain.py" "$@"
+        ;;
+    root)
+        CMD="${1:-id}"
+        shift || true
+        DEV=$(resolve_device "${1:-}")
+        M="${2:-$MODEL}"
+        exec "$SCRIPT_DIR/scripts/dump_partitions.sh" "$DEV" "$M" --cmd "$CMD"
+        ;;
+    clu)
+        ACTION="${1:-read}"
+        shift || true
+        NBI_URL="${NBI_URL:-http://127.0.0.1:7557}"
+        if [ "$ACTION" = "read" ]; then
+            python3 -c "
+import sys, json, urllib.request
+try:
+    with urllib.request.urlopen('$NBI_URL/devices/?projection=_id,Device.JioSTB.Debugging.CommandLine') as r:
+        devs = json.loads(r.read())
+        for d in devs:
+            did = d.get('_id','')
+            if 'TEST' in did: continue
+            cl = d.get('Device', {}).get('JioSTB', {}).get('Debugging', {}).get('CommandLine', {})
+            print(f'Device: {did}')
+            for k in ('Enable','OnBootExecuteCmd','Output','Error','ValidityDate','lastExecutionTime'):
+                v = cl.get(k, {})
+                print(f'  {k:18} = {v.get(\"_value\")!r}')
+except Exception as e:
+    print('Error querying CLU output:', e)
+"
+        else
+            CMD="$ACTION"
+            DEV=$(resolve_device "${1:-}")
+            M="jhs"
+            exec "$SCRIPT_DIR/scripts/dump_partitions.sh" "$DEV" "$M" --cmd "$CMD"
+        fi
         ;;
     net)
         ACTION="${1:-help}"

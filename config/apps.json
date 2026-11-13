@@ -92,6 +92,26 @@
       "repo": "sds100/KeyMapper",
       "asset_filter": ".*\\.apk",
       "output_filename": "keymapper.apk"
+    },
+    {
+      "id": "monet",
+      "name": "Monet Launcher",
+      "package": "com.klevico.monet",
+      "category": "launcher",
+      "description": "Lightweight custom Android TV launcher featured in original sideload-jiostb",
+      "source": "direct",
+      "url": "https://github.com/ilikechocopies/sideload-jiostb/raw/main/monet-launcher.apk",
+      "output_filename": "monet-launcher.apk"
+    },
+    {
+      "id": "shevery",
+      "name": "Shevery (Shizuku Manager)",
+      "package": "com.hamondev.shevery",
+      "category": "utility",
+      "description": "Privileged API manager with full AppOps & battery exemption from sideload-jiostb",
+      "source": "direct",
+      "url": "https://github.com/ilikechocopies/sideload-jiostb/raw/main/shevery-release.apk",
+      "output_filename": "shevery-release.apk"
     }
   ]
 }
